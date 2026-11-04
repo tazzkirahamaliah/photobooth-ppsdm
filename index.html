@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PPPSDM POM 2026 - Vintage Photobooth</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@500;700;800&family=VT323&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'win-bg': '#008080',
+                        'win-gray': '#c0c0c0',
+                        'win-dark': '#808080',
+                        'win-blue': '#000080',
+                        'pom-blue': '#1e3a8a',
+                        'pom-gold': '#d97706',
+                        'cream-bg': '#f5f0e1',
+                        'cream-card': '#eae3d2'
+                    },
+                    fontFamily: {
+                        pixel: ['"VT323"', 'monospace'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"Courier Prime"', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Fallback CSS Core Styles in case CDN is restricted */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #008080;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #1a1a1a;
+            user-select: none;
+            padding: 12px;
+            min-height: 100vh;
+        }
+
+        /* Y2K Windows Retro Bevel UI */
+        .win-box {
+            background-color: #c0c0c0;
+            border: 2px solid #ffffff;
+            border-right-color: #404040;
+            border-bottom-color: #404040;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.3);
+        }
+
+        .win-header {
+            background: linear-gradient(90deg, #000080 0%, #1084d0 100%);
+            color: #ffffff;
+            padding: 4px 8px;
+            font-family: 'VT323', monospace;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .win-inset {
+            border: 2px solid #808080;
+            border-right-color: #ffffff;
+            border-bottom-color: #ffffff;
+            background-color: #000000;
+        }
+
+        .win-btn {
+            background: #c0c0c0;
+            border: 2px solid #ffffff;
+            border-right-color: #404040;
+            border-bottom-color: #404040;
+            padding: 6px 12px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: #000;
+            box-shadow: 1px 1px 0px #000;
+        }
+
+        .win-btn:active {
+            border: 2px solid #404040;
+            border-right-color: #ffffff;
+            border-bottom-color: #ffffff;
+            background: #a0a0a0;
+            transform: translate(1px, 1px);
+            box-shadow: none;
+        }
+
+        .win-btn-primary {
+            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            border: 2px solid #60a5fa;
+            border-right-color: #1e3a8a;
+            border-bottom-color: #1e3a8a;
+        }
+
+        /* CRT Scanline & Grain FX */
+        .scanline-box {
+            position: relative;
+            overflow: hidden;
+        }
+        .scanline-box::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            opacity: 0.4;
+            z-index: 10;
+        }
+
+        /* Tab Active Styles */
+        .tab-active {
+            background: #ffffff !important;
+            border-bottom-color: #ffffff !important;
+            font-weight: bold;
+            color: #000080;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #c0c0c0;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #000080;
+        }
+
+        /* Flash FX */
+        #flash-screen {
+            pointer-events: none;
+            transition: opacity 0.25s ease-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-between min-h-screen">
+
+    <!-- Flash Overlay -->
+    <div id="flash-screen" class="fixed inset-0 bg-white z-50 opacity-0"></div>
+
+    <!-- Main Operating Desktop Window -->
+    <div class="w-full max-w-6xl win-box rounded-t overflow-hidden my-auto shadow-2xl">
+        
+        <!-- OS Titlebar Bar -->
+        <div class="win-header">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-camera-retro text-amber-300"></i>
+                <span class="tracking-widest uppercase">PPPSDM POM 2026 • MAGANGHUB DIGITAL PHOTOBOOTH V2.0</span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="btn-toggle-sfx" class="win-btn py-0.5 px-2 text-xs text-black bg-amber-300 font-mono">
+                    <i id="sfx-icon" class="fa-solid fa-volume-high"></i> SFX: <span id="sfx-status">ON</span>
+                </button>
+                <div class="flex gap-1">
+                    <span class="w-3 h-3 bg-red-500 border border-black inline-block"></span>
+                    <span class="w-3 h-3 bg-yellow-400 border border-black inline-block"></span>
+                    <span class="w-3 h-3 bg-green-500 border border-black inline-block"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inner Content Grid (Split 2 Columns) -->
+        <div class="p-3 sm:p-5 bg-cream-bg grid grid-cols-1 lg:grid-cols-12 gap-5">
+
+            <!-- LEFT COLUMN: CAMERA & LIVE VIEWPORT (Lg: 7 cols) -->
+            <div class="lg:col-span-7 flex flex-col gap-4">
+                
+                <!-- Live Viewport Container -->
+                <div class="win-box p-2 bg-win-gray">
+                    <div class="flex justify-between items-center mb-1 font-mono text-xs font-bold text-slate-800">
+                        <span><i class="fa-solid fa-video text-red-600 animate-pulse"></i> LIVE_FEED_VIEWPORT.EXE</span>
+                        <span id="cam-status-badge" class="bg-emerald-700 text-white px-2 py-0.5 rounded text-[10px]">WEBCAM READY</span>
+                    </div>
+
+                    <!-- Canvas Viewport -->
+                    <div class="relative w-full aspect-[4/3] win-inset scanline-box flex items-center justify-center overflow-hidden">
+                        
+                        <!-- Hidden Video Input -->
+                        <video id="webcam" autoplay playsinline class="hidden"></video>
+                        
+                        <!-- Filtered Live Canvas Viewport -->
+                        <canvas id="view-canvas" class="w-full h-full object-cover transform -scale-x-100"></canvas>
+
+                        <!-- Stamp Badge Overlay -->
+                        <div class="absolute top-2 left-2 bg-black/70 text-amber-300 font-pixel text-sm px-2 py-0.5 border border-amber-500/40 rounded z-20">
+                            PPPSDM-POM • MAGANGHUB 2026
+                        </div>
+
+                        <!-- Simulation Mode Indicator -->
+                        <div id="sim-badge" class="hidden absolute top-2 right-2 bg-red-600 text-white font-mono text-[10px] font-bold px-2 py-1 rounded border border-white z-20">
+                            ⚠️ SIMULATION MODE (NO CAM)
+                        </div>
+
+                        <!-- Interactive Countdown Display -->
+                        <div id="countdown-modal" class="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center hidden z-30">
+                            <span id="countdown-num" class="font-pixel text-9xl text-amber-300 drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] animate-bounce">3</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters Control Palette -->
+                <div class="win-box p-3 bg-win-gray">
+                    <div class="font-pixel text-base font-bold text-win-blue mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> CHOOSE VINTAGE FILTER FX:
+                    </div>
+                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-1.5 font-sans">
+                        <button data-filter="normal" class="filter-btn win-btn text-xs w-full bg-white border-2 border-win-blue">Original</button>
+                        <button data-filter="warm" class="filter-btn win-btn text-xs w-full">Warm Grain</button>
+                        <button data-filter="sepia" class="filter-btn win-btn text-xs w-full">Sepia Y2K</button>
+                        <button data-filter="cyber" class="filter-btn win-btn text-xs w-full">Cyber POM</button>
+                        <button data-filter="mono" class="filter-btn win-btn text-xs w-full">Mono B&W</button>
+                        <button data-filter="flash" class="filter-btn win-btn text-xs w-full">Y2K Flash</button>
+                    </div>
+                </div>
+
+                <!-- Primary Action Controls -->
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <button id="btn-start-capture" class="win-btn win-btn-primary py-3 px-4 text-base font-bold flex-1 shadow-lg">
+                        <i class="fa-solid fa-camera text-xl"></i> <span id="capture-btn-text">TAKE PHOTO (#1/4)</span>
+                    </button>
+                    <button id="btn-retake-shot" class="win-btn py-3 px-3 text-xs font-bold text-amber-900 bg-amber-200">
+                        <i class="fa-solid fa-rotate-left"></i> Retake Last
+                    </button>
+                    <button id="btn-reset-all" class="win-btn py-3 px-3 text-xs font-bold text-red-800 bg-red-100">
+                        <i class="fa-solid fa-trash-can"></i> Reset All
+                    </button>
+                </div>
+
+                <!-- Capture Thumbnails Slot Progress -->
+                <div class="win-box p-2 bg-win-gray">
+                    <div class="flex justify-between items-center mb-1">
+                        <span class="font-mono text-[11px] font-bold text-slate-700 uppercase">
+                            Manual Captured Poses (<span id="capture-count-text">0</span>/4):
+                        </span>
+                        <span id="capture-status-badge" class="font-pixel text-xs bg-amber-300 text-black px-1.5 py-0.5 border border-black">
+                            CLICK TO SNAP SHOT 1
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-2">
+                        <div id="thumb-0" class="aspect-[4/3] win-inset flex items-center justify-center font-pixel text-slate-500 text-sm">#1</div>
+                        <div id="thumb-1" class="aspect-[4/3] win-inset flex items-center justify-center font-pixel text-slate-500 text-sm">#2</div>
+                        <div id="thumb-2" class="aspect-[4/3] win-inset flex items-center justify-center font-pixel text-slate-500 text-sm">#3</div>
+                        <div id="thumb-3" class="aspect-[4/3] win-inset flex items-center justify-center font-pixel text-slate-500 text-sm">#4</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT COLUMN: PHOTOSTRIP CUSTOMIZER & RENDER (Lg: 5 cols) -->
+            <div class="lg:col-span-5 flex flex-col gap-4">
+                
+                <div class="win-box p-3 bg-win-gray flex flex-col gap-3">
+                    <div class="win-header rounded-sm -mx-1 -mt-1 mb-1">
+                        <span><i class="fa-solid fa-palette"></i> PHOTOSTRIP_CUSTOMIZER.EXE</span>
+                    </div>
+
+                    <!-- Customizer Tab Bar -->
+                    <div class="flex border-b-2 border-slate-500 gap-1 text-xs font-bold">
+                        <button id="tab-btn-frame" class="tab-btn win-btn py-1 px-3 tab-active">Frame & Theme</button>
+                        <button id="tab-btn-stickers" class="tab-btn win-btn py-1 px-3">Stickers & Lab</button>
+                        <button id="tab-btn-doodle" class="tab-btn win-btn py-1 px-3">Doodle Pen</button>
+                    </div>
+
+                    <!-- TAB 1: Frame & Layout -->
+                    <div id="panel-frame" class="space-y-3 pt-1">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-800 mb-1">Layout Format:</label>
+                            <div class="grid grid-cols-3 gap-1.5 text-xs">
+                                <button data-layout="strip" class="layout-btn win-btn w-full bg-white border-2 border-win-blue">🎞️ 4-Strip</button>
+                                <button data-layout="grid" class="layout-btn win-btn w-full">🖼️ 2x2 Grid</button>
+                                <button data-layout="idcard" class="layout-btn win-btn w-full">🪪 ID Badge</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-800 mb-1">Frame Color Theme:</label>
+                            <div class="grid grid-cols-2 gap-1.5 text-xs">
+                                <button data-theme="pom-official" class="theme-btn win-btn w-full justify-start border-2 border-win-blue">
+                                    <span class="w-3 h-3 rounded-full bg-blue-900 border inline-block"></span> PPPSDM Official
+                                </button>
+                                <button data-theme="vintage-cream" class="theme-btn win-btn w-full justify-start">
+                                    <span class="w-3 h-3 rounded-full bg-amber-100 border border-slate-500 inline-block"></span> Vintage Cream
+                                </button>
+                                <button data-theme="y2k-pastel" class="theme-btn win-btn w-full justify-start">
+                                    <span class="w-3 h-3 rounded-full bg-pink-300 border inline-block"></span> Y2K Soft Pink
+                                </button>
+                                <button data-theme="cyber-lab" class="theme-btn win-btn w-full justify-start">
+                                    <span class="w-3 h-3 rounded-full bg-emerald-500 border inline-block"></span> Cyber Lab
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-800 mb-1">Custom Photostrip Text:</label>
+                            <input type="text" id="caption-text-input" value="Maganghub @ PPPSDM POM 2026" 
+                                class="w-full win-inset p-2 text-xs text-amber-300 font-pixel focus:outline-none focus:ring-1 focus:ring-amber-400">
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: Stickers Palette -->
+                    <div id="panel-stickers" class="space-y-3 pt-1 hidden">
+                        <span class="text-[11px] text-slate-700 font-mono block">Click sticker to spawn onto photo strip (Drag on preview canvas to reposition):</span>
+                        
+                        <div class="space-y-2">
+                            <span class="text-xs font-bold text-win-blue block uppercase">🧪 PPPSDM & Lab Stamps:</span>
+                            <div class="flex flex-wrap gap-1.5 p-2 bg-white win-inset text-lg">
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('🧪')">🧪</button>
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('🔬')">🔬</button>
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('💊')">💊</button>
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('🥼')">🥼</button>
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('🛡️')">🛡️</button>
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('APPROVED', 'badge-green')">🏷️ APPROVED</button>
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('MAGANG 2026', 'badge-blue')">🏷️ MAGANG 2026</button>
+                            </div>
+
+                            <span class="text-xs font-bold text-red-700 block uppercase">💖 Y2K Cute Stickers:</span>
+                            <div class="flex flex-wrap gap-1.5 p-2 bg-white win-inset text-lg">
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('💖')">💖</button>
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('⭐')">⭐</button>
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('✨')">✨</button>
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('🎀')">🎀</button>
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('🍒')">🍒</button>
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('💾')">💾</button>
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('✌️')">✌️</button>
+                                <button class="hover:scale-125 transition" onclick="spawnSticker('🔥')">🔥</button>
+                            </div>
+                        </div>
+
+                        <button id="btn-clear-stickers" class="win-btn w-full py-1 text-xs text-red-700 font-bold">
+                            🗑️ Clear All Added Stickers
+                        </button>
+                    </div>
+
+                    <!-- TAB 3: Doodle Tools -->
+                    <div id="panel-doodle" class="space-y-3 pt-1 hidden">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-bold text-slate-800">Brush Color:</label>
+                            <div class="flex gap-2">
+                                <button data-color="#d94f3d" class="color-pick w-6 h-6 rounded-full bg-red-600 border-2 border-black"></button>
+                                <button data-color="#1e3a8a" class="color-pick w-6 h-6 rounded-full bg-blue-900 border border-slate-400"></button>
+                                <button data-color="#16a34a" class="color-pick w-6 h-6 rounded-full bg-green-600 border border-slate-400"></button>
+                                <button data-color="#eab308" class="color-pick w-6 h-6 rounded-full bg-yellow-500 border border-slate-400"></button>
+                                <button data-color="#ffffff" class="color-pick w-6 h-6 rounded-full bg-white border border-slate-400"></button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-800 mb-1">Pen Thickness:</label>
+                            <input type="range" id="doodle-size-slider" min="2" max="16" value="5" class="w-full">
+                        </div>
+
+                        <div class="flex gap-2">
+                            <button id="btn-toggle-doodle" class="win-btn flex-1 py-1 text-xs font-bold text-blue-900">
+                                ✏️ Pen Mode: <span id="doodle-status-text">OFF</span>
+                            </button>
+                            <button id="btn-clear-doodle" class="win-btn py-1 px-3 text-xs font-bold text-red-600">
+                                Clear Pen
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- PREVIEW CANVAS RENDER CONTAINER -->
+                <div class="win-box p-3 bg-slate-400 flex flex-col items-center justify-center min-h-[360px] max-h-[440px] overflow-auto">
+                    <canvas id="output-canvas" class="max-w-full h-auto shadow-2xl bg-white border-2 border-black cursor-crosshair"></canvas>
+                </div>
+
+                <!-- Export / Download Action -->
+                <button id="btn-download-photo" class="win-btn win-btn-primary py-3 px-4 text-base font-bold w-full shadow-lg">
+                    <i class="fa-solid fa-download"></i> DOWNLOAD PHOTO STRIP (PNG)
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- Footer OS Status Bar -->
+        <div class="bg-win-gray border-t-2 border-white p-1.5 px-3 flex justify-between items-center text-xs font-mono text-slate-700">
+            <span>PPPSDM POM © 2026 • MAGANGHUB CREATIVE TEAM</span>
+            <span>SYSTEM_STATUS: OK</span>
+        </div>
+
+    </div>
+
+    <!-- JAVASCRIPT APP LOGIC -->
+    <script>
+        // --- APP STATE ---
+        const appState = {
+            sfx: true,
+            filter: 'normal',
+            layout: 'strip', // 'strip', 'grid', 'idcard'
+            theme: 'pom-official', // 'pom-official', 'vintage-cream', 'y2k-pastel', 'cyber-lab'
+            photos: [],
+            stickers: [],
+            caption: 'Maganghub @ PPPSDM POM 2026',
+            isCamActive: false,
+            isDoodling: false,
+            doodleColor: '#d94f3d',
+            doodleSize: 5,
+            isMouseDown: false,
+            activeStickerIdx: -1
+        };
+
+        // --- DOM REFERENCES ---
+        // --- MANUAL STEP-BY-STEP CAPTURE SEQUENCE ---
+        let isCapturing = false;
+
+        async function captureSinglePhoto() {
+            if (isCapturing) return;
+            if (appState.photos.length >= 4) {
+                alert("Sudah 4 pose! Kamu bisa riset (Reset All) atau ulang foto terakhir (Retake Last).");
+                return;
+            }
+
+            isCapturing = true;
+            const currentPoseIndex = appState.photos.length;
+
+            // 3-2-1 Countdown before single snapshot
+            countdownModal.classList.remove('hidden');
+            for (let count = 3; count > 0; count--) {
+                countdownNum.innerText = count;
+                playBeep(700, 0.08);
+                await new Promise(r => setTimeout(r, 650));
+            }
+            countdownModal.classList.add('hidden');
+
+            // Trigger Flash & SFX
+            playShutterSFX();
+            flashScreen.style.opacity = '0.95';
+            setTimeout(() => flashScreen.style.opacity = '0', 200);
+
+            // Create Snapshot Canvas
+            const snapCanvas = document.createElement('canvas');
+            snapCanvas.width = 640;
+            snapCanvas.height = 480;
+            const snapCtx = snapCanvas.getContext('2d');
+            snapCtx.translate(640, 0);
+            snapCtx.scale(-1, 1);
+            snapCtx.drawImage(viewCanvas, 0, 0, 640, 480);
+
+            // Add snapshot to state
+            appState.photos.push(snapCanvas);
+
+            // Update Thumbnail
+            const thumbEl = document.getElementById(`thumb-${currentPoseIndex}`);
+            thumbEl.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = snapCanvas.toDataURL();
+            img.className = 'w-full h-full object-cover';
+            thumbEl.appendChild(img);
+
+            updateCaptureUIState();
+            renderOutputPhotostrip();
+            isCapturing = false;
+        }
+
+        function retakeLastPhoto() {
+            if (appState.photos.length === 0) return;
+            playBeep(450, 0.08);
+            const removedIndex = appState.photos.length - 1;
+            appState.photos.pop();
+
+            const thumbEl = document.getElementById(`thumb-${removedIndex}`);
+            thumbEl.innerHTML = `#${removedIndex + 1}`;
+
+            updateCaptureUIState();
+            renderOutputPhotostrip();
+        }
+
+        function resetAllPhotos() {
+            playBeep(350, 0.1);
+            appState.photos = [];
+            for (let i = 0; i < 4; i++) {
+                document.getElementById(`thumb-${i}`).innerHTML = `#${i+1}`;
+            }
+            updateCaptureUIState();
+            renderOutputPhotostrip();
+        }
+
+        function updateCaptureUIState() {
+            const count = appState.photos.length;
+            document.getElementById('capture-count-text').innerText = count;
+
+            const btnText = document.getElementById('capture-btn-text');
+            const badge = document.getElementById('capture-status-badge');
+
+            if (count < 4) {
+                btnText.innerText = `TAKE PHOTO (#${count + 1}/4)`;
+                badge.innerText = `CLICK TO SNAP SHOT ${count + 1}`;
+                badge.className = "font-pixel text-xs bg-amber-300 text-black px-1.5 py-0.5 border border-black";
+            } else {
+                btnText.innerText = `READY TO DECORATE! (4/4)`;
+                badge.innerText = `ALL 4 POSES CAPTURED`;
+                badge.className = "font-pixel text-xs bg-emerald-400 text-black px-1.5 py-0.5 border border-black";
+            }
+        }
+
+        // Generate Sample Snapshots if not captured
+        function generateDefaultPhotos() {
+            appState.photos = [];
+            const bgColors = ['#000080', '#008080', '#d94f3d', '#e6a15c'];
+            const icons = ['✌️', '🔬', '💊', '📸'];
+
+            for (let i = 0; i < 4; i++) {
+                const c = document.createElement('canvas');
+                c.width = 640;
+                c.height = 480;
+                const ctx = c.getContext('2d');
+
+                ctx.fillStyle = bgColors[i];
+                ctx.fillRect(0, 0, 640, 480);
+
+                ctx.font = '90px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(icons[i], 320, 200);
+
+                ctx.font = 'bold 26px "VT323", monospace';
+                ctx.fillStyle = '#fde047';
+                ctx.fillText(`PPPSDM POSES #${i+1}`, 320, 320);
+
+                appState.photos.push(c);
+            }
+        }
+
+        // --- RENDER OUTPUT PHOTOSTRIP ---
+        function renderOutputPhotostrip() {
+            if (appState.photos.length < 4) generateDefaultPhotos();
+
+            let w = 440, h = 1150;
+            if (appState.layout === 'grid') { w = 780; h = 880; }
+            else if (appState.layout === 'idcard') { w = 480; h = 760; }
+
+            outputCanvas.width = w;
+            outputCanvas.height = h;
+
+            // Theme colors
+            let bgMain = '#000080', textColor = '#ffffff';
+            if (appState.theme === 'vintage-cream') { bgMain = '#f5f0e1'; textColor = '#1e3a8a'; }
+            else if (appState.theme === 'y2k-pastel') { bgMain = '#fbcfe8'; textColor = '#831843'; }
+            else if (appState.theme === 'cyber-lab') { bgMain = '#022c22'; textColor = '#34d399'; }
+
+            outputCtx.fillStyle = bgMain;
+            outputCtx.fillRect(0, 0, w, h);
+
+            // Border Accent
+            outputCtx.strokeStyle = 'rgba(0,0,0,0.2)';
+            outputCtx.lineWidth = 10;
+            outputCtx.strokeRect(5, 5, w - 10, h - 10);
+
+            // Top Header Brand
+            outputCtx.fillStyle = textColor;
+            outputCtx.font = 'bold 22px "VT323", monospace';
+            outputCtx.textAlign = 'center';
+            outputCtx.fillText('★ PPPSDM POM 2026 ★', w / 2, 38);
+
+            const p = appState.photos;
+
+            if (appState.layout === 'strip') {
+                const photoW = 360, photoH = 230;
+                const startX = (w - photoW) / 2;
+                let startY = 55;
+
+                for (let i = 0; i < 4; i++) {
+                    outputCtx.fillStyle = '#ffffff';
+                    outputCtx.fillRect(startX - 5, startY - 5, photoW + 10, photoH + 10);
+                    outputCtx.drawImage(p[i], startX, startY, photoW, photoH);
+                    startY += photoH + 18;
+                }
+
+                outputCtx.fillStyle = textColor;
+                outputCtx.font = 'bold 18px "Plus Jakarta Sans", sans-serif';
+                outputCtx.fillText(appState.caption, w / 2, h - 50);
+                outputCtx.font = '15px "VT323", monospace';
+                outputCtx.fillText(`BATCH 2026 • MAGANGHUB OFFICIAL`, w / 2, h - 28);
+
+            } else if (appState.layout === 'grid') {
+                const photoW = 340, photoH = 250;
+                const coords = [
+                    { x: 35, y: 70 }, { x: 405, y: 70 },
+                    { x: 35, y: 350 }, { x: 405, y: 350 }
+                ];
+
+                for (let i = 0; i < 4; i++) {
+                    outputCtx.fillStyle = '#ffffff';
+                    outputCtx.fillRect(coords[i].x - 5, coords[i].y - 5, photoW + 10, photoH + 10);
+                    outputCtx.drawImage(p[i], coords[i].x, coords[i].y, photoW, photoH);
+                }
+
+                outputCtx.fillStyle = textColor;
+                outputCtx.font = 'bold 24px "VT323", monospace';
+                outputCtx.fillText(appState.caption.toUpperCase(), w / 2, h - 120);
+                outputCtx.font = '16px sans-serif';
+                outputCtx.fillText('Pusat Pengembangan SDM POM', w / 2, h - 85);
+
+            } else if (appState.layout === 'idcard') {
+                outputCtx.fillStyle = '#ffffff';
+                outputCtx.fillRect(25, 60, w - 50, h - 100);
+
+                outputCtx.fillStyle = '#000080';
+                outputCtx.fillRect(25, 60, w - 50, 70);
+                outputCtx.fillStyle = '#ffffff';
+                outputCtx.font = 'bold 20px sans-serif';
+                outputCtx.fillText('MAGANGHUB PPPSDM POM', w / 2, 102);
+
+                outputCtx.drawImage(p[0], w/2 - 130, 150, 260, 200);
+
+                outputCtx.drawImage(p[1], 45, 370, 115, 85);
+                outputCtx.drawImage(p[2], 180, 370, 115, 85);
+                outputCtx.drawImage(p[3], 315, 370, 115, 85);
+
+                outputCtx.fillStyle = '#0f172a';
+                outputCtx.font = 'bold 18px sans-serif';
+                outputCtx.fillText(appState.caption, w / 2, 500);
+
+                outputCtx.font = 'bold 14px "VT323", monospace';
+                outputCtx.fillStyle = '#2563eb';
+                outputCtx.fillText('STATUS: OFFICIAL INTERN 2026', w / 2, 530);
+
+                // Barcode Effect
+                outputCtx.fillStyle = '#000000';
+                for(let b = 50; b < w - 50; b += 8) {
+                    outputCtx.fillRect(b, 580, (b % 16 === 0) ? 4 : 2, 35);
+                }
+            }
+
+            renderStickersOnCanvas();
+        }
+
+        function renderStickersOnCanvas() {
+            appState.stickers.forEach(s => {
+                outputCtx.save();
+                outputCtx.translate(s.x, s.y);
+
+                if (s.type === 'badge-green') {
+                    outputCtx.fillStyle = '#16a34a';
+                    outputCtx.fillRect(-55, -14, 110, 28);
+                    outputCtx.fillStyle = '#ffffff';
+                    outputCtx.font = 'bold 11px sans-serif';
+                    outputCtx.textAlign = 'center';
+                    outputCtx.textBaseline = 'middle';
+                    outputCtx.fillText(s.text, 0, 0);
+                } else if (s.type === 'badge-blue') {
+                    outputCtx.fillStyle = '#1e3a8a';
+                    outputCtx.fillRect(-55, -14, 110, 28);
+                    outputCtx.fillStyle = '#ffffff';
+                    outputCtx.font = 'bold 11px sans-serif';
+                    outputCtx.textAlign = 'center';
+                    outputCtx.textBaseline = 'middle';
+                    outputCtx.fillText(s.text, 0, 0);
+                } else {
+                    outputCtx.font = `${s.size || 38}px sans-serif`;
+                    outputCtx.textAlign = 'center';
+                    outputCtx.textBaseline = 'middle';
+                    outputCtx.fillText(s.text, 0, 0);
+                }
+                outputCtx.restore();
+            });
+        }
+
+        function spawnSticker(text, type = 'emoji') {
+            playBeep(900, 0.05);
+            const x = outputCanvas.width / 2 + (Math.random() * 60 - 30);
+            const y = outputCanvas.height / 2 + (Math.random() * 60 - 30);
+            appState.stickers.push({ text, type, x, y, size: 40 });
+            renderOutputPhotostrip();
+        }
+
+        // --- DOODLE & DRAG EVENTS ---
+        let lastX = 0, lastY = 0;
+
+        function getCanvasCoords(e) {
+            const rect = outputCanvas.getBoundingClientRect();
+            const scaleX = outputCanvas.width / rect.width;
+            const scaleY = outputCanvas.height / rect.height;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        outputCanvas.addEventListener('mousedown', (e) => {
+            const pos = getCanvasCoords(e);
+            if (appState.isDoodling) {
+                appState.isMouseDown = true;
+                lastX = pos.x; lastY = pos.y;
+            } else {
+                appState.stickers.forEach((s, idx) => {
+                    if (Math.abs(s.x - pos.x) < 30 && Math.abs(s.y - pos.y) < 30) {
+                        appState.activeStickerIdx = idx;
+                        appState.isMouseDown = true;
+                    }
+                });
+            }
+        });
+
+        outputCanvas.addEventListener('mousemove', (e) => {
+            if (!appState.isMouseDown) return;
+            const pos = getCanvasCoords(e);
+
+            if (appState.isDoodling) {
+                outputCtx.beginPath();
+                outputCtx.moveTo(lastX, lastY);
+                outputCtx.lineTo(pos.x, pos.y);
+                outputCtx.strokeStyle = appState.doodleColor;
+                outputCtx.lineWidth = appState.doodleSize;
+                outputCtx.lineCap = 'round';
+                outputCtx.stroke();
+                lastX = pos.x; lastY = pos.y;
+            } else if (appState.activeStickerIdx >= 0) {
+                appState.stickers[appState.activeStickerIdx].x = pos.x;
+                appState.stickers[appState.activeStickerIdx].y = pos.y;
+                renderOutputPhotostrip();
+            }
+        });
+
+        outputCanvas.addEventListener('mouseup', () => {
+            appState.isMouseDown = false;
+            appState.activeStickerIdx = -1;
+        });
+
+        // Touch event handlers
+        outputCanvas.addEventListener('touchstart', (e) => {
+            const touch = e.touches[0];
+            const evt = new MouseEvent('mousedown', { clientX: touch.clientX, clientY: touch.clientY });
+            outputCanvas.dispatchEvent(evt);
+        });
+        outputCanvas.addEventListener('touchmove', (e) => {
+            const touch = e.touches[0];
+            const evt = new MouseEvent('mousemove', { clientX: touch.clientX, clientY: touch.clientY });
+            outputCanvas.dispatchEvent(evt);
+        });
+        outputCanvas.addEventListener('touchend', () => {
+            outputCanvas.dispatchEvent(new MouseEvent('mouseup', {}));
+        });
+
+        // --- BIND UI CONTROLS ---
+        document.getElementById('btn-toggle-sfx').addEventListener('click', () => {
+            appState.sfx = !appState.sfx;
+            document.getElementById('sfx-status').innerText = appState.sfx ? 'ON' : 'OFF';
+            playBeep(500, 0.05);
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                playBeep(800, 0.05);
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('border-2', 'border-win-blue'));
+                btn.classList.add('border-2', 'border-win-blue');
+                appState.filter = btn.dataset.filter;
+            });
+        });
+
+        // Customizer Tabs
+        const tabList = [
+            { btn: 'tab-btn-frame', panel: 'panel-frame' },
+            { btn: 'tab-btn-stickers', panel: 'panel-stickers' },
+            { btn: 'tab-btn-doodle', panel: 'panel-doodle' }
+        ];
+
+        tabList.forEach(t => {
+            document.getElementById(t.btn).addEventListener('click', () => {
+                playBeep(650, 0.05);
+                tabList.forEach(x => {
+                    document.getElementById(x.panel).classList.add('hidden');
+                    document.getElementById(x.btn).classList.remove('tab-active');
+                });
+                document.getElementById(t.panel).classList.remove('hidden');
+                document.getElementById(t.btn).classList.add('tab-active');
+            });
+        });
+
+        document.querySelectorAll('.layout-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                playBeep(700, 0.05);
+                document.querySelectorAll('.layout-btn').forEach(b => b.classList.remove('border-2', 'border-win-blue'));
+                btn.classList.add('border-2', 'border-win-blue');
+                appState.layout = btn.dataset.layout;
+                renderOutputPhotostrip();
+            });
+        });
+
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                playBeep(750, 0.05);
+                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('border-2', 'border-win-blue'));
+                btn.classList.add('border-2', 'border-win-blue');
+                appState.theme = btn.dataset.theme;
+                renderOutputPhotostrip();
+            });
+        });
+
+        document.getElementById('caption-text-input').addEventListener('input', (e) => {
+            appState.caption = e.target.value;
+            renderOutputPhotostrip();
+        });
+
+        document.getElementById('btn-clear-stickers').addEventListener('click', () => {
+            playBeep(400, 0.08);
+            appState.stickers = [];
+            renderOutputPhotostrip();
+        });
+
+        document.querySelectorAll('.color-pick').forEach(btn => {
+            btn.addEventListener('click', () => {
+                playBeep(900, 0.05);
+                document.querySelectorAll('.color-pick').forEach(b => b.classList.remove('border-2', 'border-black'));
+                btn.classList.add('border-2', 'border-black');
+                appState.doodleColor = btn.dataset.color;
+            });
+        });
+
+        document.getElementById('doodle-size-slider').addEventListener('input', (e) => {
+            appState.doodleSize = e.target.value;
+        });
+
+        document.getElementById('btn-toggle-doodle').addEventListener('click', () => {
+            appState.isDoodling = !appState.isDoodling;
+            playBeep(appState.isDoodling ? 1000 : 500, 0.05);
+            document.getElementById('doodle-status-text').innerText = appState.isDoodling ? 'ON' : 'OFF';
+        });
+
+        document.getElementById('btn-clear-doodle').addEventListener('click', () => {
+            playBeep(350, 0.1);
+            renderOutputPhotostrip();
+        });
+
+        document.getElementById('btn-start-capture').addEventListener('click', runCaptureSequence);
+        document.getElementById('btn-toggle-cam').addEventListener('click', initCamera);
+
+        document.getElementById('btn-download-photo').addEventListener('click', () => {
+            playBeep(1100, 0.15);
+            const imageURI = outputCanvas.toDataURL("image/png");
+            const link = document.createElement('a');
+            link.download = `PPPSDM-POM-Photostrip-${Date.now()}.png`;
+            link.href = imageURI;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // INIT APP
+        window.addEventListener('load', () => {
+            initCamera();
+            loopLiveViewport();
+            generateDefaultPhotos();
+            renderOutputPhotostrip();
+        });
+    </script>
+</body>
+</html>
+        document.getElementById('btn-start-capture').addEventListener('click', captureSinglePhoto);
+        document.getElementById('btn-retake-shot').addEventListener('click', retakeLastPhoto);
+        document.getElementById('btn-reset-all').addEventListener('click', resetAllPhotos);
+        document.getElementById('btn-toggle-cam').addEventListener('click', initCamera);
+
+        // INIT APP
+        window.addEventListener('load', () => {
+            initCamera();
+            loopLiveViewport();
+            generateDefaultPhotos();
+            renderOutputPhotostrip();
+            updateCaptureUIState();
+        });
+    </script>
+</body>
+</html>
